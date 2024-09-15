@@ -1,0 +1,84 @@
+.App {
+  display: flex;               /* Use Flexbox for alignment */
+  justify-content: center;     /* Center horizontally */
+  min-height: 100vh;           /* Ensure full viewport height */
+  background-color: #f0f0f0;   /* Optional: background color */
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns, each taking 1 fraction of space */
+  grid-template-rows: auto auto; /* Two rows, auto height based on content */
+  gap: 20px; /* Space between grid items */
+  width: 100%;
+  max-width: 1600px;
+  padding: 10px;
+}
+
+.video-player-section {
+  grid-column: span 2; /* Span across 2 columns */
+  display: grid;
+  grid-template-rows: auto 1fr; /* Stack video and speech-to-text */
+  gap: 10px; /* Space between video and speech-to-text */
+}
+
+.video-playlist-section{
+  grid-column: span 1;
+  display: grid;
+  gap: 10px;
+}
+
+.video-player-box {
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  position: relative;
+}
+
+.video-player-box > .react-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.speech-to-text-box {
+  padding: 10px;
+  background-color: #e0e0e0; /* Optional styling */
+}
+
+.llm-section {
+  grid-column: span 2; /* Span across 2 columns */
+  display: grid;
+  grid-template-rows: auto 1fr; /* Stack video and speech-to-text */
+  gap: 10px; 
+}
+
+.prompt-generation-box {
+  grid-column: span 1; /* Span one column */
+  background-color: #e8e8e8; /* Optional styling */
+  padding: 10px;
+  min-height: 100px; /* Example height */
+}
+
+.response-box {
+  grid-column: span 1; /* Span one column */
+  background-color: #d8d8d8; /* Optional styling */
+  padding: 10px;
+  min-height: 100px; /* Example height */
+}
+
+
+.video-playlist-row {
+  cursor: pointer; /* Correctly without quotes */
+  padding: 10px; /* Correctly without quotes */
+  border: 1px solid #ddd; /* Correctly without quotes */
+  margin-bottom: 5px; /* Optional: adds space between rows */
+  background-color: #f9f9f9; /* Optional: gives a slight background color */
+  transition: background-color 0.3s; /* Optional: adds a hover effect */
+}
+
+.video-playlist-row:hover {
+  background-color: #e0e0e0; /* Optional: hover effect */
+}
