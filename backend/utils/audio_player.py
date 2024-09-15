@@ -6,7 +6,7 @@ import time
 import wave
 import uuid
 import os
-from utils.process_audio import check_folder
+from utils.process_audio_queue import check_folder
 import webrtcvad
 
 class AudioPlayer:
@@ -58,9 +58,9 @@ class AudioPlayer:
         vad.set_mode(3)
 
         silence_duration = 0
-        max_silence_duration = 0.5  # Seconds
-        max_chunk_duration = 7  # Seconds
-        min_chunk_duration = 4  # Seconds
+        max_silence_duration = 0.1  # Seconds
+        max_chunk_duration = 6  # Seconds
+        min_chunk_duration = 3  # Seconds
         current_chunk_duration = 0
         isStart = False
         current_chunk_buffer = b'' 
@@ -84,7 +84,7 @@ class AudioPlayer:
                 try:
                     is_speech = vad.is_speech(vad_frame, sample_rate)
 
-                    if not isStart and is_speech:
+                    if not isStart:
                         isStart = True
                         silence_duration = 0
                         current_chunk_duration = frame_duration_ms / 1000

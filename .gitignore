@@ -110,3 +110,9 @@ dmypy.json
 
 # Ignore all .mp4 files
 *.mp4
+*.srt
+*.txt
+*.wav
+*.mp3
+*.m4a
+

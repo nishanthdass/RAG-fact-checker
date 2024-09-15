@@ -6,7 +6,7 @@ import os
 from utils.audio_player import AudioPlayer
 from utils.convert_seconds import convert_seconds_to_hh_mm_ss
 from session_middleware import get_session_id
-from utils.process_audio import ProcessAudioQueue
+from utils.process_audio_queue import ProcessAudioQueue
 import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -132,5 +132,5 @@ class FileCreationHandler(FileSystemEventHandler):
             file_name = os.path.basename(event.src_path)
             start_time = audio_player.get_clip_start_time(file_name)
             print(f"New file detected: {file_name} with start time: {start_time}")
-            self.audio_queue.enqueue(file_name)
-            self.audio_queue.dequeue()  # Process the file immediately
+            # self.audio_queue.enqueue(file_name)
+            # self.audio_queue.dequeue()  # Process the file immediately
