@@ -31,7 +31,7 @@ class AudioPlayer:
 
     def _play_in_thread(self, audio_path, start_time):
 
-        sample_rate = 48000  # Hz
+        sample_rate = 16000  # Hz
         channels = 1  # Mono
         sample_width = 2  # Bytes for 16-bit PCM
 
@@ -59,7 +59,7 @@ class AudioPlayer:
 
         silence_duration = 0
         max_silence_duration = 0.1  # Seconds
-        max_chunk_duration = 6  # Seconds
+        max_chunk_duration = 5  # Seconds
         min_chunk_duration = 3  # Seconds
         current_chunk_duration = 0
         isStart = False
@@ -91,7 +91,7 @@ class AudioPlayer:
                         current_chunk_buffer = vad_frame  # Start new buffer with current frame
 
                         clip_start_time = start_time + elapsed_time - (frame_duration_ms / 1000.0)
-                        print(f"Clip starts at {clip_start_time} seconds")
+                        # print(f"Clip starts at {clip_start_time} seconds")
                     elif isStart:
                         current_chunk_duration += frame_duration_ms / 1000
                         if not is_speech:
@@ -108,7 +108,7 @@ class AudioPlayer:
                                 # Convert current_chunk_buffer to numpy array
                                 chunk_audio_data_np = np.frombuffer(current_chunk_buffer, dtype=np.int16)
                                 self._save_clip(file_name, chunk_audio_data_np, sample_rate, channels, sample_width)
-                                print(f"Saving clip to {file_name} starting at {clip_start_time} seconds")
+                                # print(f"Saving clip to {file_name} starting at {clip_start_time} seconds")
                                 self.time_file_dict[file_name] = clip_start_time
                                 # Reset for next chunk
                                 current_chunk_buffer = b''
@@ -124,8 +124,7 @@ class AudioPlayer:
                 except Exception as e:
                     print(f"Error in vad.is_speech: {e}")
                     return (None, pyaudio.paAbort)
-
-
+                
             return (audio_data, pyaudio.paContinue)
 
 
@@ -134,7 +133,8 @@ class AudioPlayer:
                         rate=sample_rate,        
                         output=True,
                         stream_callback=callback)
-
+        
+        
         with self.lock:
             self.process = process
             self.stream = stream
@@ -147,6 +147,17 @@ class AudioPlayer:
                 time.sleep(0.1)
         finally:
             self.stop()
+            self._save_remaining_chunk(current_chunk_buffer, sample_rate, channels, sample_width)
+
+    def _save_remaining_chunk(self, current_chunk_buffer, sample_rate, channels, sample_width):
+        """ Save the last chunk if it's non-empty """
+        if current_chunk_buffer:
+            session_prefix = f"{self.session}_" if self.session else ""
+            file_name = os.path.join(self.temp_dir, f"{session_prefix}temp_audio_{self.file_count}.wav")
+            chunk_audio_data_np = np.frombuffer(current_chunk_buffer, dtype=np.int16)
+            self._save_clip(file_name, chunk_audio_data_np, sample_rate, channels, sample_width)
+            self.time_file_dict[file_name] = time.time()  # Approximate time if needed
+            self.file_count += 1
 
     def _save_clip(self, file_name, audio_data, sample_rate, channels, sample_width):
         with wave.open(file_name, 'wb') as wf:
@@ -161,13 +172,13 @@ class AudioPlayer:
             if self.stream:
                 try:
                     if self.stream.is_active():
-                        print("Stopping the stream...")
+                        # print("Stopping the stream...")
                         self.stream.stop_stream()
                 except Exception as e:
                     print(f"Error stopping the stream: {e}")
 
                 try:
-                    print("Closing the stream...")
+                    # print("Closing the stream...")
                     self.stream.close()
                 except Exception as e:
                     print(f"Error closing the stream: {e}")
@@ -176,14 +187,14 @@ class AudioPlayer:
 
             if self.process:
                 try:
-                    print("Killing the process...")
+                    # print("Killing the process...")
                     self.process.kill()
                     self.process.wait()
                 except Exception as e:
                     print(f"Error killing the process: {e}")
 
             self.process = None
-            print("Audio resources have been cleaned up.")
+            # print("Audio resources have been cleaned up.")
 
     def pause(self):
         self.stop()

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes import router
 from session_middleware import SessionMiddleware
 
+
 app = FastAPI()
 
 
