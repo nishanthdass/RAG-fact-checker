@@ -29,8 +29,10 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
 
 ## How It Works
+![Drawing1](https://github.com/user-attachments/assets/f7c5b63f-dbcb-4d19-98cb-e1a7b49308e8)
 
 ### Data Collection through Web Scraping
+![Drawing2](https://github.com/user-attachments/assets/5d2a1ae8-3e95-48c8-8329-3c622bb5601b)
 
 A background server utilizes the **Scrapy** web crawling framework to scrape webpages containing:
 
@@ -46,6 +48,7 @@ The scraped data is:
 - Chunked and stored in a vector database using **LangChain** for optimized retrieval.
 
 ### Speech Processing and Speaker Identification
+![Drawing3](https://github.com/user-attachments/assets/5e3e04aa-f931-4722-b04e-28bb3759afab)
 
 When a video stream or MP4 file is input:
 
@@ -55,12 +58,11 @@ When a video stream or MP4 file is input:
 ### Retrieval-Augmented Generation (RAG)
 
 As text is generated:
+![Drawing4](https://github.com/user-attachments/assets/0779f8f2-d5fb-4904-9b1f-e1a427ff01bb)
 
 - It is chunked using **LangChain**.
 - Embeddings are created and stored in a vector database (**PGVector**).
 - The system creates augmented queries to search the vector database for related information.
-
-### Real-Time Misinformation Detection
 
 While the speaker is talking:
 
