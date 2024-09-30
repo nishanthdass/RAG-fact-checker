@@ -29,7 +29,8 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
 
 ## How It Works
-![Drawing1](https://github.com/user-attachments/assets/f7c5b63f-dbcb-4d19-98cb-e1a7b49308e8)
+![Drawing1](https://github.com/user-attachments/assets/433f10d8-9671-4b10-b6b8-984e31d72a5f)
+
 
 ### Data Collection through Web Scraping
 ![Drawing2](https://github.com/user-attachments/assets/5d2a1ae8-3e95-48c8-8329-3c622bb5601b)
