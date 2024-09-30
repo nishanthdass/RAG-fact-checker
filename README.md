@@ -31,6 +31,28 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 ## How It Works
 ![Drawing1](https://github.com/user-attachments/assets/433f10d8-9671-4b10-b6b8-984e31d72a5f)
 
+### Retrieval-Augmented Generation (RAG)
+![Drawing4](https://github.com/user-attachments/assets/0779f8f2-d5fb-4904-9b1f-e1a427ff01bb)
+As text is generated:
+
+- It is chunked using **LangChain**.
+- Embeddings are created and stored in a vector database (**PGVector**).
+- The system creates augmented queries to search the vector database for related information.
+
+While the speaker is talking:
+
+- Augmented queries check the vector database to verify the accuracy of statements.
+- Results from the large language model (LLM) are integrated back into the database.
+- The system provides immediate feedback on whether the speaker is telling the truth.
+
+### Speech Processing and Speaker Identification
+![Drawing3](https://github.com/user-attachments/assets/5e3e04aa-f931-4722-b04e-28bb3759afab)
+
+When a video stream or MP4 file is input:
+
+- **WhisperX API** performs speech-to-text conversion and conducts speaker diarization to segment audio by speaker.
+- **PyAnnote Audio** creates embeddings Speaker embeddings which are compared against known embeddings of major political candidates for identification.
+
 
 ### Data Collection through Web Scraping
 ![Drawing2](https://github.com/user-attachments/assets/5d2a1ae8-3e95-48c8-8329-3c622bb5601b)
@@ -47,28 +69,6 @@ The scraped data is:
 - Refactored into JSON files.
 - Categorized by speaker name and time segments for precise tracking.
 - Chunked and stored in a vector database using **LangChain** for optimized retrieval.
-
-### Speech Processing and Speaker Identification
-![Drawing3](https://github.com/user-attachments/assets/5e3e04aa-f931-4722-b04e-28bb3759afab)
-
-When a video stream or MP4 file is input:
-
-- **WhisperX API** performs speech-to-text conversion and conducts speaker diarization to segment audio by speaker.
-- **PyAnnote Audio** creates embeddings Speaker embeddings which are compared against known embeddings of major political candidates for identification.
-
-### Retrieval-Augmented Generation (RAG)
-![Drawing4](https://github.com/user-attachments/assets/0779f8f2-d5fb-4904-9b1f-e1a427ff01bb)
-As text is generated:
-
-- It is chunked using **LangChain**.
-- Embeddings are created and stored in a vector database (**PGVector**).
-- The system creates augmented queries to search the vector database for related information.
-
-While the speaker is talking:
-
-- Augmented queries check the vector database to verify the accuracy of statements.
-- Results from the large language model (LLM) are integrated back into the database.
-- The system provides immediate feedback on whether the speaker is telling the truth.
 
 ## Benefits of RAG Implementation
 
