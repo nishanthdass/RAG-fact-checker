@@ -17,12 +17,12 @@
 
 ## Introduction
 
-This application is a tech demo that leverages **Retrieval-Augmented Generation (RAG)** to detect misinformation in political speeches, rallies, and debates in real-time. By integrating advanced speech-to-text processing, speaker verification, and large language models, the tool provides instant insights into the accuracy of statements made by political figures.
+This application leverages **Retrieval-Augmented Generation (RAG)** to detect misinformation in political speeches, rallies, and debates in real-time. By integrating advanced speech-to-text processing, speaker verification, and large language models, the tool provides instant insights into the accuracy of statements made by political figures.
 
 ## Features
 
-- **Real-Time Speech Processing**: Converts live video streams or MP4 files into text using WhisperX API.
-- **Speaker Diarization and Identification**: Identifies and verifies speakers using PyAnnote Audio and embeddings of known 2024 political candidates.
+- **Real-Time Speech Processing and Speaker Diarization**: Converts live video streams or MP4 files into text using WhisperX API.
+- **Speaker Verification**: Verifies speakers by creating embeddings of known 2024 political candidates using PyAnnote Audio.
 - **Dynamic Data Collection**: Continuously scrapes official websites for new transcripts, press releases, and policy documents.
 - **RAG Implementation**: Uses Retrieval-Augmented Generation to compare spoken content against a vector database for misinformation detection.
 - **Embeddings and Vector Database**: Stores and retrieves data efficiently using OpenAI Embeddings API and PGVector.
@@ -49,9 +49,8 @@ The scraped data is:
 
 When a video stream or MP4 file is input:
 
-- **WhisperX API** performs speech-to-text conversion.
-- **PyAnnote Audio** conducts speaker diarization to segment audio by speaker.
-- Speaker embeddings are compared against known embeddings of major political candidates for identification.
+- **WhisperX API** performs speech-to-text conversion and conducts speaker diarization to segment audio by speaker.
+- **PyAnnote Audio** creates embeddings Speaker embeddings which are compared against known embeddings of major political candidates for identification.
 
 ### Retrieval-Augmented Generation (RAG)
 
@@ -86,14 +85,6 @@ While the speaker is talking:
 - **PGVector**: Vector database for storing embeddings.
 - **Scrapy**: Web crawling framework for data collection.
 - **Large Language Models (LLMs)**: For generating augmented queries and interpreting results.
-
-## Flowcharts
-
-Flowcharts illustrating the system architecture and data flow are available in the `docs/flowcharts` directory. These diagrams provide a visual representation of:
-
-- Data collection and processing pipeline.
-- Real-time speech processing workflow.
-- RAG implementation and query augmentation.
 
 ## Getting Started
 
