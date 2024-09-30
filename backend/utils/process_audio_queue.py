@@ -19,7 +19,8 @@ import torchaudio
 load_dotenv()
 
 speaker_diarization = os.getenv("speaker_diarization")
-
+pipeline = os.getenv("pipeline")
+inference_model = os.getenv("inference_model")
 class ProcessAudioQueue:
     def __init__(self, temp_dir='temp_audio_files', session_id=None, device = None, model=None):
         self.session_id = session_id
@@ -29,9 +30,9 @@ class ProcessAudioQueue:
         self.model = model
         self.whisper_model = whisper.load_model("base.en")
         self.pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1",
-                        use_auth_token="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")
+                        use_auth_token=pipeline)
         self.inference_model = Model.from_pretrained("pyannote/embedding", 
-                        use_auth_token="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")
+                        use_auth_token=inference_model)
         self.diarize_bank = {}
 
         

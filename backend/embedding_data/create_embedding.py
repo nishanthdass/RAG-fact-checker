@@ -3,12 +3,13 @@ from pyannote.core import Segment
 import numpy as np
 
 
-
+pipeline = os.getenv("pipeline")
+inference_model = os.getenv("inference_model")
 
 pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1",
-                        use_auth_token="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")
+                        use_auth_token=pipeline)
 inference_model = Model.from_pretrained("pyannote/embedding", 
-                        use_auth_token="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")
+                        use_auth_token=inference_model)
 
 
 diarize_bank = []
