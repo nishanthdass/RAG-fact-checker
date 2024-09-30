@@ -5,10 +5,9 @@
 - [Introduction](#introduction)
 - [Features](#features)
 - [How It Works](#how-it-works)
-  - [Data Collection through Web Scraping](#data-collection-through-web-scraping)
-  - [Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
   - [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
-  - [Real-Time Misinformation Detection](#real-time-misinformation-detection)
+  - [Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
+  - [Data Collection through Web Scraping](#data-collection-through-web-scraping)
 - [Benefits of RAG Implementation](#benefits-of-rag-implementation)
 - [Technologies Used](#technologies-used)
 - [Flowcharts](#flowcharts)
@@ -29,6 +28,8 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
 
 ## How It Works
+
+### Overview:
 ![Drawing1](https://github.com/user-attachments/assets/433f10d8-9671-4b10-b6b8-984e31d72a5f)
 
 ### Retrieval-Augmented Generation (RAG)
