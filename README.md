@@ -56,9 +56,8 @@ When a video stream or MP4 file is input:
 - **PyAnnote Audio** creates embeddings Speaker embeddings which are compared against known embeddings of major political candidates for identification.
 
 ### Retrieval-Augmented Generation (RAG)
-
-As text is generated:
 ![Drawing4](https://github.com/user-attachments/assets/0779f8f2-d5fb-4904-9b1f-e1a427ff01bb)
+As text is generated:
 
 - It is chunked using **LangChain**.
 - Embeddings are created and stored in a vector database (**PGVector**).
