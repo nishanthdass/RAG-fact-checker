@@ -1,0 +1,107 @@
+# Real-Time Misinformation Detection in Political Speeches using RAG and Gen AI
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Features](#features)
+- [How It Works](#how-it-works)
+  - [Data Collection through Web Scraping](#data-collection-through-web-scraping)
+  - [Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
+  - [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
+  - [Real-Time Misinformation Detection](#real-time-misinformation-detection)
+- [Benefits of RAG Implementation](#benefits-of-rag-implementation)
+- [Technologies Used](#technologies-used)
+- [Flowcharts](#flowcharts)
+- [Getting Started](#getting-started)
+- [License](#license)
+
+## Introduction
+
+This application is a tech demo that leverages **Retrieval-Augmented Generation (RAG)** to detect misinformation in political speeches, rallies, and debates in real-time. By integrating advanced speech-to-text processing, speaker verification, and large language models, the tool provides instant insights into the accuracy of statements made by political figures.
+
+## Features
+
+- **Real-Time Speech Processing**: Converts live video streams or MP4 files into text using WhisperX API.
+- **Speaker Diarization and Identification**: Identifies and verifies speakers using PyAnnote Audio and embeddings of known 2024 political candidates.
+- **Dynamic Data Collection**: Continuously scrapes official websites for new transcripts, press releases, and policy documents.
+- **RAG Implementation**: Uses Retrieval-Augmented Generation to compare spoken content against a vector database for misinformation detection.
+- **Embeddings and Vector Database**: Stores and retrieves data efficiently using OpenAI Embeddings API and PGVector.
+- **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
+
+## How It Works
+
+### Data Collection through Web Scraping
+
+A background server utilizes the **Scrapy** web crawling framework to scrape webpages containing:
+
+- Official transcripts
+- Press releases
+- Speeches
+- Policy documents
+
+The scraped data is:
+
+- Refactored into JSON files.
+- Categorized by speaker name and time segments for precise tracking.
+- Chunked and stored in a vector database using **LangChain** for optimized retrieval.
+
+### Speech Processing and Speaker Identification
+
+When a video stream or MP4 file is input:
+
+- **WhisperX API** performs speech-to-text conversion.
+- **PyAnnote Audio** conducts speaker diarization to segment audio by speaker.
+- Speaker embeddings are compared against known embeddings of major political candidates for identification.
+
+### Retrieval-Augmented Generation (RAG)
+
+As text is generated:
+
+- It is chunked using **LangChain**.
+- Embeddings are created and stored in a vector database (**PGVector**).
+- The system creates augmented queries to search the vector database for related information.
+
+### Real-Time Misinformation Detection
+
+While the speaker is talking:
+
+- Augmented queries check the vector database to verify the accuracy of statements.
+- Results from the large language model (LLM) are integrated back into the database.
+- The system provides immediate feedback on whether the speaker is telling the truth.
+
+## Benefits of RAG Implementation
+
+- **Enhanced Accuracy**: RAG combines retrieved data with generative models to produce more factual and context-aware responses.
+- **Efficient Retrieval**: Vector databases enable fast and scalable similarity searches, crucial for real-time applications.
+- **Dynamic Updating**: Continuously enriches the knowledge base with new data from both web scraping and live inputs.
+- **Contextual Understanding**: Provides deeper insights by considering the context around statements, not just isolated facts.
+- **Scalability**: Modular design allows for easy expansion to include more speakers or data sources.
+
+## Technologies Used
+
+- **WhisperX API**: For speech-to-text conversion.
+- **PyAnnote Audio**: For speaker diarization and verification.
+- **LangChain**: For text chunking and processing.
+- **OpenAI Embeddings API**: To create embeddings of text data.
+- **PGVector**: Vector database for storing embeddings.
+- **Scrapy**: Web crawling framework for data collection.
+- **Large Language Models (LLMs)**: For generating augmented queries and interpreting results.
+
+## Flowcharts
+
+Flowcharts illustrating the system architecture and data flow are available in the `docs/flowcharts` directory. These diagrams provide a visual representation of:
+
+- Data collection and processing pipeline.
+- Real-time speech processing workflow.
+- RAG implementation and query augmentation.
+
+## Getting Started
+
+**Prerequisites**:
+
+- Python 3.8 or higher
+- API keys for OpenAI and WhisperX
+- PostgreSQL database with PGVector extension
+
+**Installation**:
+
