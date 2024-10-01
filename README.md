@@ -9,6 +9,8 @@
   - [Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
   - [Data Collection through Web Scraping](#data-collection-through-web-scraping)
 - [Benefits of RAG Implementation](#benefits-of-rag-implementation)
+- [Technologies Used](#technologies-used)
+- [Getting Started](#getting-started)
 
 ## Introduction
 
