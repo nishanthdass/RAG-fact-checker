@@ -99,33 +99,40 @@ git clone https://github.com/nishanthdass/political-fact-checker.git
 ```
 
 ### 2. Navigate to the Backend Directory
-
+```bash
 cd political-fact-checker/backend
+```
 
 ### 3. Create a Conda Environment
 Create a new Conda environment with Python 3.10 for the project:
-
+```bash
 conda create --name fact-checker python=3.10
+```
 
 ### 4. Activate the Conda Environment
 Activate the newly created Conda environment:
-
+```bash
 conda activate fact-checker
+```
 
 ### 5. Install the Required Dependencies
 Install the project dependencies listed in the requirements.txt file:
-
+```bash
 pip install -r requirements.txt
+```
 
 ### 6. Create the .env File
 Create a .env file in the backend directory to store your required keys for authentication. This is necessary for accessing the PyAnnote speaker diarization and embedding models. Your .env file should contain the following keys:
 
+```bash
 pipeline=your_pyannote_diarization_token
 inference_model=your_pyannote_embedding_token
+```
 
 Ensure that you replace your_pyannote_diarization_token and your_pyannote_embedding_token with your actual tokens from PyAnnote.
 
 ### 7. Run the Backend Server
 To start the backend server, run:
-
+```bash
 uvicorn main:app --reload
+```
