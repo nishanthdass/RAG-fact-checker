@@ -98,12 +98,12 @@ Follow these steps to set up the backend of the **Political Fact Checker** proje
 Begin by cloning the project repository to your local machine:
 
 ```bash
-git clone https://github.com/nishanthdass/political-fact-checker.git
+git clone https://github.com/nishanthdass/RAG-fact-checker
 ```
 
 ### 2. Navigate to the Backend Directory
 ```bash
-cd political-fact-checker/backend
+cd RAG-fact-checker/backend
 ```
 
 ### 3. Create a Conda Environment
@@ -147,7 +147,7 @@ Follow these steps to set up the frontend of the **Political Fact Checker** proj
 
 ### 8. Navigate to the Frontend Directory
 ```bash
-cd political-fact-checker/frontend
+cd RAG-fact-checker/frontend
 ```
 
 ### 9. Install packages
