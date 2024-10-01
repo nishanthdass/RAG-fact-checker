@@ -91,7 +91,7 @@ The scraped data is:
 ## Getting Started
 
 ## Backend Setup:
-Follow these steps to set up the backend of the **Political Fact Checker** project.
+Follow these steps to set up the backend of the **RAG Fact Checker** project.
 
 ### 1. Clone the Repository
 
@@ -143,7 +143,7 @@ uvicorn main:app --reload
 ```
 
 ## Frontend Setup:
-Follow these steps to set up the frontend of the **Political Fact Checker** project. Make sure you have cloned the directory.
+Follow these steps to set up the frontend of the **RAG Fact Checker** project. Make sure you have cloned the directory.
 
 ### 8. Navigate to the Frontend Directory
 ```bash
