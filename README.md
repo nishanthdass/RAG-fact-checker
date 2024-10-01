@@ -26,7 +26,8 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 ## How It Works
 
 ### Overview:
-![Drawing1](https://github.com/user-attachments/assets/433f10d8-9671-4b10-b6b8-984e31d72a5f)
+![Drawing1](https://github.com/user-attachments/assets/a46ca7a9-e0c8-4085-9023-9dd3c7a62cac)
+
 
 ### Retrieval-Augmented Generation (RAG)
 ![Drawing4](https://github.com/user-attachments/assets/0779f8f2-d5fb-4904-9b1f-e1a427ff01bb)
