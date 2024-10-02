@@ -1,36 +1,29 @@
-# utils/routes.py
 from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from urllib.parse import quote
 import os
-from utils.audio_player import AudioPlayer
-from utils.convert_seconds import convert_seconds_to_hh_mm_ss
-from session_middleware import get_session_id
-from utils.process_audio_queue import ProcessAudioQueue, check_folder
-import time
+from media_player.audio_player import AudioPlayer
+from App.session_middleware import get_session_id
+from media_player.speech_to_text.process_audio_queue import ProcessAudioQueue
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from typing import Dict
-from threading import Event, Lock
+from threading import Lock
 import whisperx
-import torch
-
-
 
 router = APIRouter()
 
-VIDEO_DIR = "videoclips"
-audio_player = AudioPlayer()
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+VIDEO_DIR = os.path.join(BASE_DIR, 'media_player', 'video_clips')
+TEMP_AUDIO_DIR = os.path.join(BASE_DIR, 'media_player', 'speech_to_text', 'temp_audio_files')
 
-# monitoring_event = Event()
+audio_player = AudioPlayer(temp_dir=TEMP_AUDIO_DIR)
 
-# Dictionary to keep track of active threads for each session
 active_threads: Dict[str, Observer] = {}
 active_threads_lock = Lock()
 
 device = "cpu"
 model = whisperx.load_model("base", device, compute_type="float32")
-
 
 
 @router.get("/videos")
@@ -50,6 +43,7 @@ async def get_videos():
 @router.get("/videos/{video_name}")
 async def get_video(video_name: str, request: Request):
     video_path = os.path.join(VIDEO_DIR, video_name)
+    print(video_path)
     if not os.path.exists(video_path):
         raise HTTPException(status_code=404, detail="Video not found")
 
@@ -99,9 +93,8 @@ class FileCreationHandler(FileSystemEventHandler):
             return
         if event.src_path.endswith('.wav'):
             file_name = os.path.basename(event.src_path)
-            # print(f"New file detected: {file_name} with start time: {start_time}")
             self.audio_queue.enqueue(file_name)
-            self.audio_queue.dequeue()  # Process the file immediately
+            self.audio_queue.dequeue()
             
 # Dictionary to keep track of active event handlers for each session
 active_event_handlers: Dict[str, FileCreationHandler] = {}
@@ -122,39 +115,21 @@ async def control_audio(request: Request, background_tasks: BackgroundTasks, ses
         event_handler = None
 
         if action == 'play':
-            print(action, convert_seconds_to_hh_mm_ss(time))
             audio_player.play(audio_path, time)
-
             with active_threads_lock:
-                # Stop the existing thread if it exists
                 if session_id in active_threads:
                     active_threads[session_id].stop()
                     active_threads[session_id].join()
-                
-                # Start a new thread for folder monitoring
                 event_handler = FileCreationHandler(session_id, device, model)
                 observer = Observer()
-                observer.schedule(event_handler, path='temp_audio_files', recursive=False)
+                observer.schedule(event_handler, path=TEMP_AUDIO_DIR, recursive=False)
                 observer.start()
-
-                # Store the observer and event handler for this session
                 active_threads[session_id] = observer
                 active_event_handlers[session_id] = event_handler
-
         elif action == 'pause':
-            print(action, convert_seconds_to_hh_mm_ss(time))
             audio_player.pause()
-
-            # # Retrieve the existing event handler for the session and clear its queue
-            # if session_id in active_event_handlers:
-            #     event_handler = active_event_handlers[session_id]
-            #     event_handler.audio_queue.clear_queue()  # Clear the queue
-            # else:
-            #     print(f"No active event handler found for session: {session_id}")
 
     except Exception as e:
         print(f"Error processing audio control command: {e}")
 
     return {"status": "ok"}
-
-

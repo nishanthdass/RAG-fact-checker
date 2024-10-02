@@ -1,6 +1,7 @@
 from pyannote.audio import Pipeline, Model, Inference
 from pyannote.core import Segment
 import numpy as np
+import os
 
 
 pipeline = os.getenv("pipeline")

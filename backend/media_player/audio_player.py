@@ -6,7 +6,7 @@ import time
 import wave
 import uuid
 import os
-from utils.process_audio_queue import check_folder
+from media_player.speech_to_text.process_audio_queue import ProcessAudioQueue
 import webrtcvad
 
 class AudioPlayer:
@@ -18,10 +18,13 @@ class AudioPlayer:
         self.terminate = False
         self.thread = None
         self.file_count = 0
-        self.temp_dir = temp_dir
         self.time_file_dict = {}
 
-        # Create a directory for temporary audio files if it doesn't exist
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        print(script_dir)
+        print(temp_dir)
+        self.temp_dir = os.path.join(script_dir, temp_dir)
+        print(self.temp_dir)
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
 
@@ -88,10 +91,9 @@ class AudioPlayer:
                         isStart = True
                         silence_duration = 0
                         current_chunk_duration = frame_duration_ms / 1000
-                        current_chunk_buffer = vad_frame  # Start new buffer with current frame
-
+                        current_chunk_buffer = vad_frame
                         clip_start_time = start_time + elapsed_time - (frame_duration_ms / 1000.0)
-                        # print(f"Clip starts at {clip_start_time} seconds")
+
                     elif isStart:
                         current_chunk_duration += frame_duration_ms / 1000
                         if not is_speech:
@@ -100,17 +102,14 @@ class AudioPlayer:
                                 min_chunk_duration <= current_chunk_duration <= max_chunk_duration
                                 or current_chunk_duration >= max_chunk_duration
                             ):
-                                # Save current chunk
                                 session_prefix = f"{self.session}_" if self.session else ""
                                 file_name = os.path.join(
                                     self.temp_dir, f"{session_prefix}temp_audio_{self.file_count}.wav"
                                 )
-                                # Convert current_chunk_buffer to numpy array
                                 chunk_audio_data_np = np.frombuffer(current_chunk_buffer, dtype=np.int16)
                                 self._save_clip(file_name, chunk_audio_data_np, sample_rate, channels, sample_width)
                                 # print(f"Saving clip to {file_name} starting at {clip_start_time} seconds")
                                 self.time_file_dict[file_name] = clip_start_time
-                                # Reset for next chunk
                                 current_chunk_buffer = b''
                                 isStart = False
                                 current_chunk_duration = 0
@@ -118,7 +117,6 @@ class AudioPlayer:
                                 self.file_count += 1
                         else:
                             silence_duration = 0
-                        # Append vad_frame to current_chunk_buffer
                         current_chunk_buffer += vad_frame
 
                 except Exception as e:
@@ -127,14 +125,12 @@ class AudioPlayer:
                 
             return (audio_data, pyaudio.paContinue)
 
-
         stream = p.open(format=pyaudio.paInt16,  # 16-bit PCM
                         channels=channels,       
                         rate=sample_rate,        
                         output=True,
                         stream_callback=callback)
-        
-        
+       
         with self.lock:
             self.process = process
             self.stream = stream

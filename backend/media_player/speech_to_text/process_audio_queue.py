@@ -24,7 +24,8 @@ inference_model = os.getenv("inference_model")
 class ProcessAudioQueue:
     def __init__(self, temp_dir='temp_audio_files', session_id=None, device = None, model=None):
         self.session_id = session_id
-        self.temp_dir = temp_dir
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # Get script directory
+        self.temp_dir = os.path.join(script_dir, temp_dir) 
         self.queue = deque()
         self.device = device
         self.model = model
@@ -35,9 +36,6 @@ class ProcessAudioQueue:
                         use_auth_token=inference_model)
         self.diarize_bank = {}
 
-        
-
-        # Load all files in the temp directory associated with the session ID
         self._load_files()
 
     def _load_files(self):
@@ -123,9 +121,10 @@ class ProcessAudioQueue:
                 
 
     def recognize_speaker(self, speaker_embedding, phrases, phrase):
-        trump_embedding_path = os.path.join(os.getcwd(), 'embedding_data', 'trump_embedding.npy')
+        trump_embedding_path = os.path.join('media_player', 'speech_to_text', 'embedding_data', 'trump_embedding.npy')
+        print(trump_embedding_path)
         trump_embedding = np.load(trump_embedding_path)
-        kamala_embedding_path = os.path.join(os.getcwd(), 'embedding_data', 'kamala_embedding.npy')
+        kamala_embedding_path = os.path.join('media_player', 'speech_to_text', 'embedding_data', 'kamala_embedding.npy')
         kamala_embedding = np.load(kamala_embedding_path)
         speaker = {"Trump" : 0, "Kamala" : 0}
         
@@ -134,7 +133,6 @@ class ProcessAudioQueue:
             similarities = []
             for idx, trump_frame in enumerate(trump_embedding):
                 similarity = 1 - cosine(speaker_embedding, trump_frame)
-                # print(f"Similarity with Trump embedding frame {idx}: {similarity}")
                 similarities.append(similarity)
             mean_similarity = np.median(similarities)
             speaker["Trump"] = mean_similarity
@@ -200,13 +198,3 @@ class ProcessAudioQueue:
         List all files currently in the queue.
         """
         return list(self.queue)
-
-def check_folder(session_id):
-    temp_dir = 'temp_audio_files'
-    audio_queue = ProcessAudioQueue(temp_dir=temp_dir, session_id=session_id)
-    
-    # List files currently in the queue
-    files = audio_queue.list_files()
-    print(f"Files in queue: {files}")
-
-
