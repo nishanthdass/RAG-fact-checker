@@ -134,8 +134,8 @@ inference_model=your_pyannote_embedding_token
 ```
 
 Ensure that you replace your_pyannote_diarization_token and your_pyannote_embedding_token with your actual tokens from PyAnnote.
-pyannote/speaker-diarization-3.1: https://huggingface.co/pyannote/speaker-diarization-3.1
-pyannote/embedding: https://huggingface.co/pyannote/embedding
+- pyannote/speaker-diarization-3.1: https://huggingface.co/pyannote/speaker-diarization-3.1
+- pyannote/embedding: https://huggingface.co/pyannote/embedding
 
 ### 7. Run the Backend Server
 To start the backend server, run:
