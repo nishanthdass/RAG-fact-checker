@@ -28,7 +28,7 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 
 ## To Do :clipboard:
 ### Backend:
-- [x] Refactor Code for Speech-to-text and Media Player & Ensure concurancy
+- [x] Refactor Code for Speech-to-text and Media Player & Ensure concurancy :link: [refactor-routes](https://github.com/nishanthdass/RAG-fact-checker/tree/refactor-routes)
 - [ ] Launch and build out Scrapy server to collect Data for Context retreival
 - [ ] Build out Retreival system vectorizes embeddings and store in Vector db
 - [ ] Build system for Query Excpansion
