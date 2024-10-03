@@ -26,7 +26,7 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **Embeddings and Vector Database**: Stores and retrieves data efficiently using OpenAI Embeddings API and PGVector.
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
 
-## To Do
+## To Do :clipboard:
 ### Backend:
 - Refactor Code for Speech-to-text and Media Player & Ensure concurancy **In-Progress**
 - Launch and build out Scrapy server to collect Data for Context retreival
