@@ -6,10 +6,9 @@
 [✨ Features](#features) <br>
 [📋 To Do](#to-do) <br>
 [⚙️ How It Works](#how-it-works) <br>
-  - [🔍 Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
-  - [🗣️ Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
-  - [🌐 Data Collection through Web Scraping](#data-collection-through-web-scraping)
-<br>
+  [🔍 Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag) <br>
+  [🗣️ Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification) <br>
+  [🌐 Data Collection through Web Scraping](#data-collection-through-web-scraping) <br>
 [🌟 Benefits of RAG Implementation](#benefits-of-rag-implementation)<br>
 [🛠️ Technologies Used](#technologies-used)<br>
 [🚀 Getting Started](#getting-started)<br>
