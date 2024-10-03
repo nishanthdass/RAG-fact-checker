@@ -1,31 +1,28 @@
 import os
 import glob
-import shutil
 from collections import deque
 import time
-import threading
-import gc
 import whisperx
-import torch
 import whisper
 from pyannote.audio import Pipeline, Model, Inference
 from dotenv import load_dotenv
 from pyannote.core import Segment
 import numpy as np
 from scipy.spatial.distance import cosine
-import torchaudio
 
-# Load the .env file
 load_dotenv()
 
 speaker_diarization = os.getenv("speaker_diarization")
 pipeline = os.getenv("pipeline")
 inference_model = os.getenv("inference_model")
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+EMBEDDING_DIR = os.path.join(BASE_DIR, 'speech_to_text', 'embedding_data')
+TEMP_DIR = os.path.join(BASE_DIR, 'speech_to_text', 'temp_audio_files') 
+
 class ProcessAudioQueue:
     def __init__(self, temp_dir='temp_audio_files', session_id=None, device = None, model=None):
         self.session_id = session_id
-        script_dir = os.path.dirname(os.path.abspath(__file__))  # Get script directory
-        self.temp_dir = os.path.join(script_dir, temp_dir) 
         self.queue = deque()
         self.device = device
         self.model = model
@@ -45,7 +42,7 @@ class ProcessAudioQueue:
         """
         session_prefix = f"{self.session_id}_"
         # Get full paths of matching files
-        files = sorted(glob.glob(os.path.join(self.temp_dir, f"{session_prefix}*.wav")))
+        files = sorted(glob.glob(os.path.join(TEMP_DIR, f"{session_prefix}*.wav")))
         # Extract file names from paths
         file_names = [os.path.basename(f) for f in files]
         self.queue.extend(file_names)
@@ -79,11 +76,10 @@ class ProcessAudioQueue:
         Custom processing logic can be implemented here.
         """
         try:
-            full_path = os.path.join(self.temp_dir, file_name)
+            full_path = os.path.join(TEMP_DIR, file_name)
             self.embed_transcribe_speakers(full_path)
         except Exception as e:
             print(f"Exception occurred while processing {file_name}: {e}")
-            # Handle the exception or log it
             raise 
 
     def embed_transcribe_speakers(self, full_path):
@@ -116,33 +112,29 @@ class ProcessAudioQueue:
 
                 if speaker_similarity < 0.1:
                     speaker_name = "Unknown"
-
                 print(speaker_name, "(", speaker_similarity, ")",": ", phrases[phrase]["text"])
                 
 
     def recognize_speaker(self, speaker_embedding, phrases, phrase):
-        trump_embedding_path = os.path.join('media_player', 'speech_to_text', 'embedding_data', 'trump_embedding.npy')
-        print(trump_embedding_path)
+        trump_embedding_path = os.path.join(EMBEDDING_DIR, 'trump_embedding.npy')
         trump_embedding = np.load(trump_embedding_path)
-        kamala_embedding_path = os.path.join('media_player', 'speech_to_text', 'embedding_data', 'kamala_embedding.npy')
+        kamala_embedding_path = os.path.join(EMBEDDING_DIR, 'kamala_embedding.npy')
         kamala_embedding = np.load(kamala_embedding_path)
         speaker = {"Trump" : 0, "Kamala" : 0}
         
         if speaker_embedding.ndim == 1:
-            # Loop through each frame in the trump_embedding and compare
             similarities = []
             for idx, trump_frame in enumerate(trump_embedding):
                 similarity = 1 - cosine(speaker_embedding, trump_frame)
                 similarities.append(similarity)
-            mean_similarity = np.median(similarities)
+            mean_similarity = np.mean(similarities)
             speaker["Trump"] = mean_similarity
 
             similarities = []
             for idx, kamala_frame in enumerate(kamala_embedding):
                 similarity = 1 - cosine(speaker_embedding, kamala_frame)
-                # print(f"Similarity with Kamala embedding frame {idx}: {similarity}")
                 similarities.append(similarity)
-            mean_similarity = np.median(similarities)
+            mean_similarity = np.mean(similarities)
             speaker["Kamala"] = mean_similarity
             
             
@@ -157,31 +149,27 @@ class ProcessAudioQueue:
         """
         Delete the specified file from the file system, waiting until it is accessible.
         """
-        full_path = os.path.join(self.temp_dir, file_name)
+        full_path = os.path.join(TEMP_DIR, file_name)
+
         retries = 0
         while retries < max_retries:
             try:
                 if os.path.exists(full_path):
-                    # Attempt to open the file to ensure it is not being used
                     with open(full_path, 'r+'):
-                        pass  # File is accessible, proceed to delete
+                        pass
 
                     os.remove(full_path)
-                    print(f"Deleted file: {full_path}")
-                    return  # Exit after successful deletion
+                    return
                 else:
                     print(f"File does not exist: {full_path}")
                     return
             except PermissionError:
                 retries += 1
                 print(f"PermissionError: File is in use. Retrying {retries}/{max_retries}...")
-                # Wait before retrying to give the process some time to release the file
                 time.sleep(wait_time)
             except FileNotFoundError:
                 print(f"File not found during deletion: {full_path}")
                 return
-
-        # If all retries fail
         print(f"Failed to delete file after {max_retries} attempts: {full_path}")
 
     def clear_queue(self):

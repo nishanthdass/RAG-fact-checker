@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
-from fastapi.responses import StreamingResponse
+from app.utilities.stream_response import handle_full_request, handle_range_request
 from urllib.parse import quote
 import os
 from media_player.audio_player import AudioPlayer
-from App.session_middleware import get_session_id
+from app.session_middleware import get_session_id
 from media_player.speech_to_text.process_audio_queue import ProcessAudioQueue
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -35,51 +35,25 @@ async def get_videos():
             for file in files
             if file.endswith((".mp4", ".webm"))  # Filter by video file types
         ]
-
         return video_files
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/videos/{video_name}")
 async def get_video(video_name: str, request: Request):
     video_path = os.path.join(VIDEO_DIR, video_name)
-    print(video_path)
+    
     if not os.path.exists(video_path):
         raise HTTPException(status_code=404, detail="Video not found")
 
     file_size = os.path.getsize(video_path)
     range_header = request.headers.get('range')
+
     if range_header:
-        range_val = range_header.strip().split("=")[-1]
-        range_start, range_end = range_val.split("-")
-        range_start = int(range_start) if range_start else 0
-        range_end = int(range_end) if range_end else file_size - 1
-        content_length = range_end - range_start + 1
-        headers = {
-            "Content-Range": f"bytes {range_start}-{range_end}/{file_size}",
-            "Accept-Ranges": "bytes",
-            "Content-Length": str(content_length),
-            "Content-Type": "video/mp4",
-        }
-
-        def iter_file():
-            with open(video_path, 'rb') as video_file:
-                video_file.seek(range_start)
-                yield video_file.read(content_length)
-
-        return StreamingResponse(iter_file(), status_code=206, headers=headers)
+        return handle_range_request(video_path, file_size, range_header)
     else:
-        headers = {
-            "Content-Length": str(file_size),
-            "Content-Type": "video/mp4",
-            "Accept-Ranges": "bytes",
-        }
-
-        def iter_file():
-            with open(video_path, 'rb') as video_file:
-                yield from video_file
-
-        return StreamingResponse(iter_file(), headers=headers)
+        return handle_full_request(video_path, file_size)
     
 class FileCreationHandler(FileSystemEventHandler):
     def __init__(self, session_id, device=None, model=None):

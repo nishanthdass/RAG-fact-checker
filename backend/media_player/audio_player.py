@@ -4,9 +4,7 @@ import subprocess
 import pyaudio
 import time
 import wave
-import uuid
 import os
-from media_player.speech_to_text.process_audio_queue import ProcessAudioQueue
 import webrtcvad
 
 class AudioPlayer:
@@ -21,10 +19,7 @@ class AudioPlayer:
         self.time_file_dict = {}
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        print(script_dir)
-        print(temp_dir)
         self.temp_dir = os.path.join(script_dir, temp_dir)
-        print(self.temp_dir)
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
 
@@ -190,7 +185,6 @@ class AudioPlayer:
                     print(f"Error killing the process: {e}")
 
             self.process = None
-            # print("Audio resources have been cleaned up.")
 
     def pause(self):
         self.stop()
