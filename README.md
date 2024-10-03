@@ -6,18 +6,18 @@
 [✨ Features](#features) <br>
 [📋 To Do](#to-do) <br>
 [⚙️ How It Works](#how-it-works) <br>
-&nbsp;&nbsp;&nbsp;&nbsp;[🔍 Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag) <br>
-&nbsp;&nbsp;&nbsp;&nbsp;[🗣️ Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification) <br>
-&nbsp;&nbsp;&nbsp;&nbsp;[🌐 Data Collection through Web Scraping](#data-collection-through-web-scraping) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[🔍 Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[🗣️ Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[🌐 Data Collection through Web Scraping](#data-collection-through-web-scraping) <br>
 [🌟 Benefits of RAG Implementation](#benefits-of-rag-implementation)<br>
 [🛠️ Technologies Used](#technologies-used)<br>
 [🚀 Getting Started](#getting-started)<br>
 
-## Introduction
+## 📘 Introduction
 
 This application leverages **Retrieval-Augmented Generation (RAG)** to detect misinformation in political speeches, rallies, and debates in real-time. By integrating advanced speech-to-text processing, speaker verification, and large language models, the tool provides instant insights into the accuracy of statements made by political figures.
 
-## Features
+## ✨ Features
 
 - **Real-Time Speech Processing and Speaker Diarization**: Converts live video streams or MP4 files into text using WhisperX API.
 - **Speaker Verification**: Verifies speakers by creating embeddings of known 2024 political candidates using PyAnnote Audio.
@@ -26,7 +26,7 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **Embeddings and Vector Database**: Stores and retrieves data efficiently using OpenAI Embeddings API and PGVector.
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
 
-## To Do :clipboard:
+## 📋 To Do
 ### Backend:
 - [x] Refactor Code for Speech-to-text and Media Player & Ensure concurancy :link: [refactor-routes](https://github.com/nishanthdass/RAG-fact-checker/tree/refactor-routes)
 - [ ] Launch and build out Scrapy server to collect Data for Context retreival
@@ -42,14 +42,14 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - [ ] Create window to display Query expansions
 - [ ] Create window to display Generations
 
-## How It Works
+## ⚙️ How It Works
 
 ### Overview:
 ![Drawing1](https://github.com/user-attachments/assets/9e112567-4324-4b1c-8d0e-405f98a9f85a)
 
 
 
-### Retrieval-Augmented Generation (RAG)
+### 🔍 Retrieval-Augmented Generation (RAG)
 ![Drawing4](https://github.com/user-attachments/assets/0779f8f2-d5fb-4904-9b1f-e1a427ff01bb)
 As text is generated:
 
@@ -63,7 +63,7 @@ While the speaker is talking:
 - Results from the large language model (LLM) are integrated back into the database.
 - The system provides immediate feedback on whether the speaker is telling the truth.
 
-### Speech Processing and Speaker Identification
+### 🗣️ Speech Processing and Speaker Identification
 ![Drawing3](https://github.com/user-attachments/assets/5e3e04aa-f931-4722-b04e-28bb3759afab)
 
 When a video stream or MP4 file is input:
@@ -72,7 +72,7 @@ When a video stream or MP4 file is input:
 - **PyAnnote Audio** creates embeddings Speaker embeddings which are compared against known embeddings of major political candidates for identification.
 
 
-### Data Collection through Web Scraping
+### 🌐 Data Collection through Web Scraping
 ![Drawing2](https://github.com/user-attachments/assets/5d2a1ae8-3e95-48c8-8329-3c622bb5601b)
 
 A background server utilizes the **Scrapy** web crawling framework to scrape webpages containing:
@@ -88,7 +88,7 @@ The scraped data is:
 - Categorized by speaker name and time segments for precise tracking.
 - Chunked and stored in a vector database using **LangChain** for optimized retrieval.
 
-## Benefits of RAG Implementation
+## 🌟 Benefits of RAG Implementation
 
 - **Enhanced Accuracy**: RAG combines retrieved data with generative models to produce more factual and context-aware responses.
 - **Efficient Retrieval**: Vector databases enable fast and scalable similarity searches, crucial for real-time applications.
@@ -96,7 +96,7 @@ The scraped data is:
 - **Contextual Understanding**: Provides deeper insights by considering the context around statements, not just isolated facts.
 - **Scalability**: Modular design allows for easy expansion to include more speakers or data sources.
 
-## Technologies Used
+## 🛠️ Technologies Used
 
 - **WhisperX API**: For speech-to-text conversion.
 - **PyAnnote Audio**: For speaker diarization and verification.
@@ -106,7 +106,7 @@ The scraped data is:
 - **Scrapy**: Web crawling framework for data collection.
 - **Large Language Models (LLMs)**: For generating augmented queries and interpreting results.
 
-## Getting Started
+## 🚀 Getting Started
 
 ## Backend Setup:
 Follow these steps to set up the backend of the **RAG Fact Checker** project.
