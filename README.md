@@ -30,7 +30,7 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 ### Backend:
 - [x] Refactor Code for Speech-to-text, Media Player & ensure concurancy <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \:octocat: [refactor-routes branch](https://github.com/nishanthdass/RAG-fact-checker/tree/refactor-routes) <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \:brain: [Brainstorm.MD](https://github.com/user-attachments/files/17245097/Brainstorm.MD)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \:brain: [Brainstorm.md](https://github.com/nishanthdass/RAG-fact-checker/blob/main/Brainstorm.md)
 - [ ] Launch and build out Scrapy server to collect Data for Context retreival
 - [ ] Build out Retreival system vectorizes embeddings and store in Vector db
 - [ ] Build system for Query Excpansion
