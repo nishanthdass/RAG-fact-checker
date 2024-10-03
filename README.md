@@ -28,11 +28,12 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 
 ## 📋 To Do
 ### Backend:
-- [x] Refactor Code for Speech-to-text, Media Player & ensure concurancy :link: [refactor-routes](https://github.com/nishanthdass/RAG-fact-checker/tree/refactor-routes)
+- [x] Refactor Code for Speech-to-text, Media Player & ensure concurancy :link: [refactor-routes](https://github.com/nishanthdass/RAG-fact-checker/tree/refactor-routes) :link: [Brainstorm](https://github.com/user-attachments/files/17245000/Brainstorm.txt)
 - [ ] Launch and build out Scrapy server to collect Data for Context retreival
 - [ ] Build out Retreival system vectorizes embeddings and store in Vector db
 - [ ] Build system for Query Excpansion
 - [ ] Formalize and validate Answers
+
 
 ### Frontend:
 - [ ] Make Scrollable list for videos
