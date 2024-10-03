@@ -4,6 +4,7 @@
 
 - [Introduction](#introduction)
 - [Features](#features)
+- [To Do](#to-do)
 - [How It Works](#how-it-works)
   - [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
   - [Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
@@ -24,6 +25,14 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **RAG Implementation**: Uses Retrieval-Augmented Generation to compare spoken content against a vector database for misinformation detection.
 - **Embeddings and Vector Database**: Stores and retrieves data efficiently using OpenAI Embeddings API and PGVector.
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
+
+## To Do
+### Backend:
+- Refactor Code for Speech-to-text and Media Player & Ensure concurancy **In-Progress**
+- Launch and build out Scrapy server to collect Data for Context retreival
+- Build out Retreival system vectorizes embeddings and store in Vector db
+- Build system for Augmented querying
+- Formalize and validate Answers
 
 ## How It Works
 
