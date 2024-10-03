@@ -25,6 +25,11 @@ active_threads_lock = Lock()
 device = "cpu"
 model = whisperx.load_model("base", device, compute_type="float32")
 
+@router.get("/")
+async def root(session_id: str = Depends(get_session_id)):
+    print("Session ID:", session_id)  # This should print the session ID in the FastAPI console
+    return {"message": "Welcome to the homepage!", "session_id": session_id}
+
 
 @router.get("/videos")
 async def get_videos():

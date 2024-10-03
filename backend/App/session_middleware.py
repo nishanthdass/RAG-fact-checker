@@ -20,7 +20,9 @@ class SessionMiddleware(BaseHTTPMiddleware):
             httponly=True, 
             samesite="Lax",
             secure=False,
-)
+        )
+        
+            print("Session ID:", session_id)
         return response
     
 

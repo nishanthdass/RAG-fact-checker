@@ -1,5 +1,5 @@
 // App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import VideoPlayerComponent from './component/VideoPlayerComponent';
 import VideoPlaylistComponent from './component/VideoPlaylistComponent';
@@ -10,6 +10,7 @@ interface Video {
 }
 function App() {
   const [video, setVideo] = useState<Video | null>(null);
+
   
   return (
     <div className="App">
