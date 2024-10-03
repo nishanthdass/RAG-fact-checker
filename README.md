@@ -28,19 +28,19 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 
 ## To Do :clipboard:
 ### Backend:
-- Refactor Code for Speech-to-text and Media Player & Ensure concurancy [x]
-- Launch and build out Scrapy server to collect Data for Context retreival [ ]
-- Build out Retreival system vectorizes embeddings and store in Vector db [ ]
-- Build system for Query Excpansion [ ]
-- Formalize and validate Answers [ ]
+- [ ] Refactor Code for Speech-to-text and Media Player & Ensure concurancy
+- [ ] Launch and build out Scrapy server to collect Data for Context retreival
+- [ ] Build out Retreival system vectorizes embeddings and store in Vector db
+- [ ] Build system for Query Excpansion
+- [ ] Formalize and validate Answers
 
 ### Frontend:
-- Make Scrollable list for videos [ ]
-- Configure processing or loading screen for React-player window [ ]
-- Create realtime subtitles output for React-player window [ ]
-- Create window to show vectorized data graph [ ]
-- Create window to display Query expansions [ ]
-- Create window to display Generations [ ]
+- [ ] Make Scrollable list for videos
+- [ ] Configure processing or loading screen for React-player window
+- [ ] Create realtime subtitles output for React-player window
+- [ ] Create window to show vectorized data graph
+- [ ] Create window to display Query expansions
+- [ ] Create window to display Generations
 
 ## How It Works
 
