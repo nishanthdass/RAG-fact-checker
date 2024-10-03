@@ -1,17 +1,17 @@
 # Real-Time Misinformation Detection in Political Speeches using RAG and Gen AI
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [To Do](#to-do)
-- [How It Works](#how-it-works)
-  - [Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
-  - [Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
-  - [Data Collection through Web Scraping](#data-collection-through-web-scraping)
-- [Benefits of RAG Implementation](#benefits-of-rag-implementation)
-- [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
+- [📘 Introduction](#introduction)
+- [✨ Features](#features)
+- [📋 To Do](#to-do)
+- [⚙️ How It Works](#how-it-works)
+  - [🔍 Retrieval-Augmented Generation (RAG)](#retrieval-augmented-generation-rag)
+  - [🗣️ Speech Processing and Speaker Identification](#speech-processing-and-speaker-identification)
+  - [🌐 Data Collection through Web Scraping](#data-collection-through-web-scraping)
+- [🌟 Benefits of RAG Implementation](#benefits-of-rag-implementation)
+- [🛠️ Technologies Used](#technologies-used)
+- [🚀 Getting Started](#getting-started)
 
 ## Introduction
 
