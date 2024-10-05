@@ -13,11 +13,11 @@
 🛠️ [Technologies Used](#technologies-used)<br>
 🚀 [Getting Started](#getting-started)<br>
 
-## 📘 Introduction
+📘 ## Introduction
 
 This application leverages **Retrieval-Augmented Generation (RAG)** to detect misinformation in political speeches, rallies, and debates in real-time. By integrating advanced speech-to-text processing, speaker verification, and large language models, the tool provides instant insights into the accuracy of statements made by political figures.
 
-## ✨ Features
+✨ ## Features
 
 - **Real-Time Speech Processing and Speaker Diarization**: Converts live video streams or MP4 files into text using WhisperX API.
 - **Speaker Verification**: Verifies speakers by creating embeddings of known 2024 political candidates using PyAnnote Audio.
@@ -26,7 +26,7 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **Embeddings and Vector Database**: Stores and retrieves data efficiently using OpenAI Embeddings API and PGVector.
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
 
-## 📋 To Do
+📋 ## To Do
 ### Backend:
 - [x] Refactor Code for Speech-to-text, Media Player & ensure concurancy <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \:octocat: [refactor-routes branch](https://github.com/nishanthdass/RAG-fact-checker/tree/refactor-routes) <br>
@@ -45,14 +45,14 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - [ ] Create window to display Query expansions
 - [ ] Create window to display Generations
 
-## ⚙️ How It Works
+⚙️ ## How It Works
 
 ### Overview:
 ![Drawing1](https://github.com/user-attachments/assets/9e112567-4324-4b1c-8d0e-405f98a9f85a)
 
 
 
-### 🔍 Retrieval-Augmented Generation (RAG)
+🔍 ### Retrieval-Augmented Generation (RAG)
 ![Drawing4](https://github.com/user-attachments/assets/0779f8f2-d5fb-4904-9b1f-e1a427ff01bb)
 As text is generated:
 
