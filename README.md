@@ -19,7 +19,7 @@
 This application leverages **Retrieval-Augmented Generation (RAG)** to detect misinformation in political speeches, rallies, and debates in real-time. By integrating advanced speech-to-text processing, speaker verification, and large language models, the tool provides instant insights into the accuracy of statements made by political figures.
 
 
-## ✨ Features
+## Features
 
 - **Real-Time Speech Processing and Speaker Diarization**: Converts live video streams or MP4 files into text using WhisperX API.
 - **Speaker Verification**: Verifies speakers by creating embeddings of known 2024 political candidates using PyAnnote Audio.
