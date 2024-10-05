@@ -1,4 +1,3 @@
-// VideoPlaylistComponent.tsx
 import React, { useEffect, useState } from 'react';
 
 interface Video {
@@ -14,13 +13,16 @@ interface VideoPlaylistComponentProps {
 
 function VideoPlaylistComponent({ url, video,  setVideo }: VideoPlaylistComponentProps) {
   const [playlist, setPlaylist] = useState<Video[]>([]);
-  
 
   useEffect(() => {
     // Fetch videos from the server link
     const fetchVideos = async () => {
       try {
-        const response = await fetch(url);
+        // Ensure that credentials (cookies) are sent with the request
+        const response = await fetch(url, {
+          method: 'GET',
+          credentials: 'include', // This ensures cookies (session ID) are sent with the request
+        });
         const data = await response.json(); // Assuming the server returns JSON data
         setPlaylist(data); // Set the fetched videos to the playlist
       } catch (error) {

@@ -1,5 +1,6 @@
 import os
 import glob
+import threading
 from collections import deque
 import time
 import whisperx
@@ -33,7 +34,11 @@ class ProcessAudioQueue:
                         use_auth_token=inference_model)
         self.diarize_bank = {}
 
+        self.stop_flag = False  # Flag to stop the thread
+        self.monitor_thread = None  # Initialize the thread as None
+
         self._load_files()
+        self._start_monitoring()
 
     def _load_files(self):
         """
@@ -43,10 +48,58 @@ class ProcessAudioQueue:
         session_prefix = f"{self.session_id}_"
         # Get full paths of matching files
         files = sorted(glob.glob(os.path.join(TEMP_DIR, f"{session_prefix}*.wav")))
-        # Extract file names from paths
-        file_names = [os.path.basename(f) for f in files]
-        self.queue.extend(file_names)
-        print(f"Loaded files into queue: {self.queue}")
+
+        if len(files) > 0:
+            
+            # Extract file names from paths and append them to the queue
+            file_names = [os.path.basename(f) for f in files]
+            for file in file_names:
+                if file not in self.queue:
+                    self.queue.append(file)
+        else:
+            print(f"No files found for session {self.session_id}. Not starting monitoring.")
+
+    def _start_monitoring(self):
+        """
+        Start the background thread to monitor the queue for files to process.
+        """
+        if not self.monitor_thread or not self.monitor_thread.is_alive():
+            self.monitor_thread = threading.Thread(target=self._monitor_queue)
+            self.monitor_thread.start()
+
+    def _monitor_queue(self):
+        """
+        Continuously monitors the queue for files to process.
+        """
+        print(f"Started monitoring for session: {self.session_id}")
+        while not self.stop_flag:
+            if self.queue:
+                self.dequeue()
+            time.sleep(2)  # Wait for the defined interval before checking again
+
+    def stop_monitoring(self):
+        """
+        Stop the background monitoring of the queue.
+        Ensure that all files are processed before stopping.
+        """
+        if self.monitor_thread:
+            # Wait for all files to be processed before stopping
+            while self.queue:
+                self.dequeue()
+            # After the queue is empty, stop monitoring
+            self.stop_flag = True
+            self.monitor_thread.join()
+            print(f"Stopped monitoring for session: {self.session_id}")
+
+    def clear_queue(self):
+        """
+        Clear the queue and delete all files associated with the session ID.
+        This method is called only after the monitoring thread has finished processing all files.
+        """
+        while self.queue:
+            file_name = self.queue.popleft()
+            self._delete_file(file_name)
+        print("Queue cleared and all session files deleted.")
 
     def enqueue(self, file_name):
         """
@@ -77,7 +130,8 @@ class ProcessAudioQueue:
         """
         try:
             full_path = os.path.join(TEMP_DIR, file_name)
-            self.embed_transcribe_speakers(full_path)
+            print(f"Session ID: {self.session_id}, Processing file: {full_path}")
+            # self.embed_transcribe_speakers(full_path)
         except Exception as e:
             print(f"Exception occurred while processing {file_name}: {e}")
             raise 
@@ -112,7 +166,7 @@ class ProcessAudioQueue:
 
                 if speaker_similarity < 0.1:
                     speaker_name = "Unknown"
-                print(speaker_name, "(", speaker_similarity, ")",": ", phrases[phrase]["text"])
+                print("session id: ", self.session_id, "speaker: ", speaker_name, "(", speaker_similarity, ")",": ", phrases[phrase]["text"])
                 
 
     def recognize_speaker(self, speaker_embedding, phrases, phrase):
@@ -149,6 +203,8 @@ class ProcessAudioQueue:
         """
         Delete the specified file from the file system, waiting until it is accessible.
         """
+
+        print(f"Deleting file: {file_name}")
         full_path = os.path.join(TEMP_DIR, file_name)
 
         retries = 0
@@ -172,14 +228,6 @@ class ProcessAudioQueue:
                 return
         print(f"Failed to delete file after {max_retries} attempts: {full_path}")
 
-    def clear_queue(self):
-        """
-        Clear the queue and delete all files associated with the session ID.
-        """
-        while self.queue:
-            file_name = self.queue.popleft()
-            self._delete_file(file_name)
-        print("Queue cleared and all session files deleted.")
 
     def list_files(self):
         """

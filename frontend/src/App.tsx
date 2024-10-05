@@ -11,6 +11,36 @@ interface Video {
 function App() {
   const [video, setVideo] = useState<Video | null>(null);
 
+  useEffect(() => {
+    
+      const socket = new WebSocket("ws://localhost:8000/ws");
+
+      socket.onopen = function(event) {
+          console.log("WebSocket connection established.");
+      };
+
+      socket.onmessage = function(event) {
+          // Extract the session ID from the message
+          if (event.data.startsWith("session_id:")) {
+              const sessionId = event.data.split(":")[1];
+
+              // Set the session ID as a cookie (expires in 1 day)
+              document.cookie = `session_id=${sessionId}; path=/; max-age=86400`; // 86400 seconds = 1 day
+              console.log("Session ID received and stored in cookie:", sessionId);
+          }
+      };
+
+      socket.onclose = function(event) {
+          console.log("WebSocket connection closed.");
+          // You can also handle session cleanup if needed
+      };
+
+      return () => {
+          socket.close();  // Cleanup WebSocket when the component unmounts
+      };
+  }, []);
+
+
   
   return (
     <div className="App">

@@ -33,5 +33,3 @@ create_embedding("kamala diarization.wav")
 np.save("kamala_embedding.npy", np.array(diarize_bank))
 
 loaded_embedding = np.load("kamala_embedding.npy")
-print(loaded_embedding)
-    
