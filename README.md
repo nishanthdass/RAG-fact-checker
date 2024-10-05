@@ -2,7 +2,7 @@
 
 ## 📑 Table of Contents
 
-- [📘 Introduction](#real-time-misinformation-detection-in-political-speeches-using-rag-and-gen-ai)  
+- [📘 Introduction](#introduction)  
 - [✨ Features](#features)  
 - [📋 To Do](#to-do)  
 - [⚙️ How It Works](#how-it-works)  
@@ -13,8 +13,6 @@
 - [🛠️ Technologies Used](#technologies-used)  
 - [🚀 Getting Started](#getting-started)
 
-
-# Real-Time Misinformation Detection in Political Speeches using RAG and Gen AI
 
 ## 📘 Introduction
 
