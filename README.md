@@ -14,7 +14,7 @@
 - [🚀 Getting Started](#getting-started)
 
 
-## 📘 Introduction
+<h2 id="introduction">📘 Introduction</h2>
 
 This application leverages **Retrieval-Augmented Generation (RAG)** to detect misinformation in political speeches, rallies, and debates in real-time. By integrating advanced speech-to-text processing, speaker verification, and large language models, the tool provides instant insights into the accuracy of statements made by political figures.
 
