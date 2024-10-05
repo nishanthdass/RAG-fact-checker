@@ -29,6 +29,7 @@ This application leverages **Retrieval-Augmented Generation (RAG)** to detect mi
 - **Continuous Learning**: Adds new information from video streams into the vector database for future retrieval.
 
 <h2 id="to-do">📋 To Do</h2>
+
 ### Backend:
 - [x] Refactor Code for Speech-to-text, Media Player & ensure concurancy <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; \:octocat: [refactor-routes branch](https://github.com/nishanthdass/RAG-fact-checker/tree/refactor-routes) <br>
