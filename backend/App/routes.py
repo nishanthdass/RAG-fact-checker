@@ -87,6 +87,7 @@ async def control_audio(request: Request, background_tasks: BackgroundTasks, ses
 
         if action == 'play':
             audio_player.play(audio_path, time)
+            print("playing audio: ", time)
         elif action == 'pause':
             audio_player.pause()
 

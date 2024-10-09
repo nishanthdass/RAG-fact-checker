@@ -9,11 +9,15 @@ from watchdog.observers import Observer
 from typing import Dict
 from threading import Lock
 from media_player.audio_player import AudioPlayer
+import logging
+
+# Suppress WhisperX logs (and other info/debug logs)
+logging.getLogger("whisperx").setLevel(logging.WARNING)
+logging.getLogger("whisper").setLevel(logging.WARNING)
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 TEMP_AUDIO_DIR = os.path.join(BASE_DIR, 'media_player', 'speech_to_text', 'temp_audio_files')
-
-print(TEMP_AUDIO_DIR)
 
 device = "cpu"
 model = whisperx.load_model("base", device, compute_type="float32")
@@ -33,7 +37,8 @@ class SessionManager:
         audio_player.set_session(session_id)
         
         # Create ProcessAudioQueue
-        audio_queue = ProcessAudioQueue(session_id=session_id, device=device, model=model)
+        print("Creating ProcessAudioQueue: ", session_id)
+        audio_queue = ProcessAudioQueue(session_id=session_id, device=device, model=model, audio_player=audio_player)
         
         
         self.active_sessions[session_id] = {
@@ -57,15 +62,6 @@ class SessionManager:
         print(f"Session not found: {session_id}")
         return None
 
-    def delete_session(self, session_id: str) -> bool:
-        """Delete a session by session ID."""
-        if session_id in self.active_sessions:
-            del self.active_sessions[session_id]
-            print(f"Deleted session: {session_id}")
-            return True
-        print(f"Session not found: {session_id}")
-        return False
-
     def session_exists(self, session_id: str) -> bool:
         """Check if a session exists."""
         return session_id in self.active_sessions
@@ -82,7 +78,8 @@ class SessionManager:
                 self.active_threads[session_id].stop()
                 self.active_threads[session_id].join()
             audio_queue = self.active_sessions[session_id]["audio_queue"]
-            event_handler = FileCreationHandler(audio_queue)
+            print("FileCreationHandler: ", session_id)
+            event_handler = FileCreationHandler(audio_queue, session_id)
             observer = Observer()
             observer.schedule(event_handler, path=TEMP_AUDIO_DIR, recursive=False)
             observer.start()
@@ -94,25 +91,28 @@ class SessionManager:
 
     def delete_session(self, session_id: str) -> bool:
         """Delete a session by session ID and clean up its resources."""
-        session_data = self.active_sessions.get(session_id)
-        if session_data:
-            # Stop the observer
-            observer = session_data["events"]
-            observer.stop()
-            observer.join()
+        with self.active_threads_lock:
+            session_data = self.active_sessions.get(session_id)
+            if session_data:
+                # Stop the observer
+                observer = session_data["events"]
+                observer.stop()
+                observer.join()
 
-            # Stop the audio player
-            audio_player = session_data["audio_player"]
-            audio_player.stop()
+                # Stop the audio player
+                audio_player = session_data["audio_player"]
+                audio_player.stop()
 
-            # Stop the ProcessAudioQueue monitoring thread
-            audio_queue = session_data["audio_queue"]
-            audio_queue.stop_monitoring()
-            audio_queue.clear_queue()
+                # Stop the ProcessAudioQueue monitoring thread
+                audio_queue = session_data["audio_queue"]
+                audio_queue.stop_monitoring()
+                audio_queue.clear_queue()
 
-            # Remove session from active sessions
-            del self.active_sessions[session_id]
-            print(f"Deleted session: {session_id}")
-            return True
-        print(f"Session not found: {session_id}")
-        return False
+                # Remove session from active sessions
+                del self.active_sessions[session_id]
+                print(f"Deleted session: {session_id}")
+                if session_id in self.active_threads:
+                    del self.active_threads[session_id]
+                return True
+            print(f"Session not found: {session_id}")
+            return False

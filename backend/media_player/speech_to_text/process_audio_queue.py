@@ -11,6 +11,7 @@ from pyannote.core import Segment
 import numpy as np
 from scipy.spatial.distance import cosine
 
+
 load_dotenv()
 
 speaker_diarization = os.getenv("speaker_diarization")
@@ -22,7 +23,8 @@ EMBEDDING_DIR = os.path.join(BASE_DIR, 'speech_to_text', 'embedding_data')
 TEMP_DIR = os.path.join(BASE_DIR, 'speech_to_text', 'temp_audio_files') 
 
 class ProcessAudioQueue:
-    def __init__(self, temp_dir='temp_audio_files', session_id=None, device = None, model=None):
+    def __init__(self, temp_dir='temp_audio_files', session_id=None, device = None, model=None, audio_player=None):
+        print("ProcessAudioQueue init: ", session_id)
         self.session_id = session_id
         self.queue = deque()
         self.device = device
@@ -37,27 +39,12 @@ class ProcessAudioQueue:
         self.stop_flag = False  # Flag to stop the thread
         self.monitor_thread = None  # Initialize the thread as None
 
-        self._load_files()
+        self.audio_player = audio_player
+        self.audio_player.set_start_time_callback(self.on_start_time_change)
+        self.cur_time = 0
+        
         self._start_monitoring()
 
-    def _load_files(self):
-        """
-        Load all files from the temporary directory that match the session ID
-        and add their names to the queue.
-        """
-        session_prefix = f"{self.session_id}_"
-        # Get full paths of matching files
-        files = sorted(glob.glob(os.path.join(TEMP_DIR, f"{session_prefix}*.wav")))
-
-        if len(files) > 0:
-            
-            # Extract file names from paths and append them to the queue
-            file_names = [os.path.basename(f) for f in files]
-            for file in file_names:
-                if file not in self.queue:
-                    self.queue.append(file)
-        else:
-            print(f"No files found for session {self.session_id}. Not starting monitoring.")
 
     def _start_monitoring(self):
         """
@@ -108,20 +95,21 @@ class ProcessAudioQueue:
         self.queue.append(file_name)
 
     def dequeue(self):
-        """
-        Process the first file in the queue, then remove it.
-        """
         if self.queue:
             file_name = self.queue.popleft()
-            if file_name:
-                try:
-                    self.process_file(file_name)
-                except Exception as e:
-                    print(f"Error processing file {file_name}: {e}")
-                    self._delete_file(file_name)
-                self._delete_file(file_name)
-        else:
-            print("Queue is empty.")
+            full_path = os.path.join(TEMP_DIR, file_name)
+            # if file_name and os.path.exists(full_path):
+            #     try:
+            #         # print(f"Processing file: {file_name}")
+            #         # print(f'Queue: {self.queue}')
+            #         self.process_file(file_name)
+            #     except Exception as e:
+            #         print(f"Error processing file {file_name}: {e}")
+            #     finally:
+            #         self._delete_file(file_name)
+            # else:
+            #     print(f"File {file_name} no longer exists, skipping.")
+
 
     def process_file(self, file_name):
         """
@@ -130,13 +118,15 @@ class ProcessAudioQueue:
         """
         try:
             full_path = os.path.join(TEMP_DIR, file_name)
-            print(f"Session ID: {self.session_id}, Processing file: {full_path}")
-            # self.embed_transcribe_speakers(full_path)
+            # print(f"Session ID: {self.session_id}, Processing file: {full_path}")
+            self.embed_transcribe_speakers(full_path)
         except Exception as e:
+            print(f'Queue: {self.queue}')
             print(f"Exception occurred while processing {file_name}: {e}")
             raise 
 
     def embed_transcribe_speakers(self, full_path):
+        total_time = 0
 
         inference = Inference(self.inference_model, window="whole")
         audio = whisperx.load_audio(full_path)
@@ -153,7 +143,7 @@ class ProcessAudioQueue:
             phrases = {}
             for word in segments["words"]:
                 if word["speaker"] not in phrases:
-                    phrases[word["speaker"]] = {"text" : "", "start" : 0, "end" : 0}
+                    phrases[word["speaker"]] = {"text" : "", "start" : 0, "end" : 0, "speaker" : "", "session_id" : self.session_id}
                     phrases[word["speaker"]]["start"] = word["start"]
                 phrases[word["speaker"]]["text"] += word["word"] + " "
                 phrases[word["speaker"]]["end"] = word["end"]
@@ -166,8 +156,14 @@ class ProcessAudioQueue:
 
                 if speaker_similarity < 0.1:
                     speaker_name = "Unknown"
-                print("session id: ", self.session_id, "speaker: ", speaker_name, "(", speaker_similarity, ")",": ", phrases[phrase]["text"])
-                
+
+                phrases[phrase]["speaker"] = speaker_name
+                total_time = self.cur_time + phrases[phrase]["end"]
+                self.diarize_bank[str(convert_seconds_to_hhmmss(total_time))] = phrases[phrase]
+        self.cur_time = total_time
+        print(f'Total time: ', convert_seconds_to_hhmmss(self.cur_time))
+        # print(self.diarize_bank)
+
 
     def recognize_speaker(self, speaker_embedding, phrases, phrase):
         trump_embedding_path = os.path.join(EMBEDDING_DIR, 'trump_embedding.npy')
@@ -204,7 +200,7 @@ class ProcessAudioQueue:
         Delete the specified file from the file system, waiting until it is accessible.
         """
 
-        print(f"Deleting file: {file_name}")
+        # print(f"Deleting file: {file_name}")
         full_path = os.path.join(TEMP_DIR, file_name)
 
         retries = 0
@@ -234,3 +230,21 @@ class ProcessAudioQueue:
         List all files currently in the queue.
         """
         return list(self.queue)
+    
+    def on_start_time_change(self, new_time):
+        """Handle the change in player's start time."""
+        print(f"Player start time changed to: {new_time}")
+        self.cur_time = new_time
+
+
+
+def convert_seconds_to_hhmmss(seconds):
+    """
+    Convert seconds to hh:mm:ss.ms format.
+    """
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    milliseconds = int((seconds - int(seconds)) * 1000)
+    return f"{hours:02}:{minutes:02}:{secs:02}.{milliseconds:03}"
+

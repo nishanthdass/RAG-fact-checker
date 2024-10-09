@@ -6,10 +6,12 @@ import time
 import wave
 import os
 import webrtcvad
+from media_player.speech_to_text.process_audio_queue import convert_seconds_to_hhmmss
 
 class AudioPlayer:
     def __init__(self, temp_dir='temp_audio_files'):
         self.session = None
+        self.start_time = 0
         self.process = None
         self.stream = None
         self.lock = threading.Lock()
@@ -27,7 +29,17 @@ class AudioPlayer:
         self.thread = threading.Thread(target=self._play_in_thread, args=(audio_path, start_time), daemon=True)
         self.thread.start()
 
+        if self.start_time != start_time and self.on_start_time_change:
+            self.on_start_time_change(start_time)
+
+        self.start_time = start_time
+
+    def set_start_time_callback(self, callback):
+        """Set a callback to be triggered when start time changes."""
+        self.on_start_time_change = callback
+
     def _play_in_thread(self, audio_path, start_time):
+        print("start_time: ", start_time)
 
         sample_rate = 16000  # Hz
         channels = 1  # Mono
@@ -60,12 +72,12 @@ class AudioPlayer:
         max_chunk_duration = 5  # Seconds
         min_chunk_duration = 3  # Seconds
         current_chunk_duration = 0
-        isStart = False
         current_chunk_buffer = b'' 
-        elapsed_time = 0.0  # Initialize elapsed_time
-        clip_start_time = None
+        elapsed_time = start_time
+        clip_start_time = 0
+        
         def callback(in_data, frame_count, time_info, status):
-            nonlocal silence_duration, current_chunk_duration, vad_buffer, isStart, current_chunk_buffer, clip_start_time, elapsed_time
+            nonlocal silence_duration, current_chunk_duration, vad_buffer, current_chunk_buffer, elapsed_time, start_time, clip_start_time
             
             requested_bytes = frame_count * sample_width * channels
             audio_data = process.stdout.read(requested_bytes)
@@ -79,40 +91,40 @@ class AudioPlayer:
                 vad_frame = vad_buffer[:frame_size]
                 vad_buffer = vad_buffer[frame_size:]
                 elapsed_time += frame_duration_ms / 1000
+                # Start a new clip if the current one is finished
+                if current_chunk_buffer == b'':
+                    
+                    current_chunk_buffer = vad_frame
+                    clip_start_time = elapsed_time
+
                 try:
+                    current_chunk_duration = elapsed_time - start_time
+
                     is_speech = vad.is_speech(vad_frame, sample_rate)
 
-                    if not isStart:
-                        isStart = True
-                        silence_duration = 0
-                        current_chunk_duration = frame_duration_ms / 1000
-                        current_chunk_buffer = vad_frame
-                        clip_start_time = start_time + elapsed_time - (frame_duration_ms / 1000.0)
-
-                    elif isStart:
-                        current_chunk_duration += frame_duration_ms / 1000
-                        if not is_speech:
+                    if not is_speech:
+                        if silence_duration < max_silence_duration:
                             silence_duration += frame_duration_ms / 1000
+
                             if silence_duration >= max_silence_duration and (
                                 min_chunk_duration <= current_chunk_duration <= max_chunk_duration
                                 or current_chunk_duration >= max_chunk_duration
                             ):
-                                session_prefix = f"{self.session}_" if self.session else ""
-                                file_name = os.path.join(
-                                    self.temp_dir, f"{session_prefix}temp_audio_{self.file_count}.wav"
-                                )
                                 chunk_audio_data_np = np.frombuffer(current_chunk_buffer, dtype=np.int16)
+                                session_prefix = f"{self.session}_" if self.session else ""
+                                file_name = os.path.join(self.temp_dir, f"{session_prefix}temp_audio_{self.file_count}.wav")
+                                self.time_file_dict[file_name] = {"start": clip_start_time, "end": elapsed_time}
                                 self._save_clip(file_name, chunk_audio_data_np, sample_rate, channels, sample_width)
-                                # print(f"Saving clip to {file_name} starting at {clip_start_time} seconds")
-                                self.time_file_dict[file_name] = clip_start_time
-                                current_chunk_buffer = b''
-                                isStart = False
-                                current_chunk_duration = 0
-                                silence_duration = 0
+                                print(f"Saving clip to {file_name} starting at {convert_seconds_to_hhmmss(clip_start_time)} and ending at {convert_seconds_to_hhmmss(elapsed_time)} seconds")
                                 self.file_count += 1
-                        else:
-                            silence_duration = 0
-                        current_chunk_buffer += vad_frame
+                                current_chunk_buffer = b''
+
+                                start_time = elapsed_time
+                                clip_start_time = elapsed_time
+                                silence_duration = 0
+                    else:
+                        silence_duration = 0
+                    current_chunk_buffer += vad_frame
 
                 except Exception as e:
                     print(f"Error in vad.is_speech: {e}")
@@ -138,11 +150,12 @@ class AudioPlayer:
                 time.sleep(0.1)
         finally:
             self.stop()
-            self._save_remaining_chunk(current_chunk_buffer, sample_rate, channels, sample_width)
+            self._save_remaining_chunk(current_chunk_buffer, sample_rate, channels, sample_width, elapsed_time, clip_start_time)
 
-    def _save_remaining_chunk(self, current_chunk_buffer, sample_rate, channels, sample_width):
+    def _save_remaining_chunk(self, current_chunk_buffer, sample_rate, channels, sample_width, elapsed_time, clip_start_time):
         """ Save the last chunk if it's non-empty """
         if current_chunk_buffer:
+            print("Saving the last chunk...", self.file_count)
             session_prefix = f"{self.session}_" if self.session else ""
             file_name = os.path.join(self.temp_dir, f"{session_prefix}temp_audio_{self.file_count}.wav")
             chunk_audio_data_np = np.frombuffer(current_chunk_buffer, dtype=np.int16)
@@ -192,11 +205,8 @@ class AudioPlayer:
     def set_session(self, session):
         self.session = session
 
-    def get_clip_start_time(self, file_name):
-        if file_name in self.time_file_dict:
-            return self.time_file_dict[file_name]
-        else:
-            return None
+    def get_player_start_time(self):
+        return self.start_time
 
 
             
