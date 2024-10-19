@@ -2,15 +2,9 @@ from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks,
 from app.utilities.stream_response import handle_full_request, handle_range_request
 from urllib.parse import quote
 import os
-from media_player.audio_player import AudioPlayer
 from app.session_middleware import get_session_id
 from app.session_manager_init import session_manager
-from media_player.speech_to_text.process_audio_queue import ProcessAudioQueue
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-from typing import Dict
-from threading import Lock
-import whisperx
+
 
 router = APIRouter()
 
@@ -25,7 +19,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
 
     # Generate a session ID when the WebSocket connection is established
-    session_id = session_manager.create_session()
+    session_id = session_manager.create_session(websocket)
     
     # Send the session ID back to the client
     print(f"Session {session_id} connected.")
@@ -36,6 +30,7 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             # Handle data or messages from the client
             print(f"Received data from session {session_id}: {data}")
+
     except WebSocketDisconnect:
         # Clean up session when WebSocket disconnects
         print(f"Session {session_id} disconnected.")
@@ -65,10 +60,14 @@ async def get_video(video_name: str, request: Request):
     file_size = os.path.getsize(video_path)
     range_header = request.headers.get('range')
 
+    session_id = get_session_id(request)
+
     if range_header:
-        return handle_range_request(video_path, file_size, range_header)
+        print("range header: ", range_header)
+        return handle_range_request(video_path, file_size, range_header, session_id)
     else:
-        return handle_full_request(video_path, file_size)
+        print("full request")
+        return handle_full_request(video_path, file_size, session_id)
     
 
 @router.post("/audio-control")
@@ -78,18 +77,26 @@ async def control_audio(request: Request, background_tasks: BackgroundTasks, ses
     time = data.get('time')
     video_name = data.get('videoName')
 
+    
+
     audio_path = os.path.join(VIDEO_DIR, video_name)
     if not os.path.exists(audio_path):
         raise HTTPException(status_code=404, detail="Audio not found")
 
     try:
+        print("@router.post session_id: ", session_id)
         audio_player = session_manager.get_session(session_id)["audio_player"]
+        audio_queue = session_manager.get_session(session_id)["audio_queue"]
 
         if action == 'play':
+            # audio_queue.clear_queue()
             audio_player.play(audio_path, time)
-            print("playing audio: ", time)
-        elif action == 'pause':
+            print("playing audio: ", time, video_name)
+            print("video name: ", video_name, video_name == None)
+        elif action == 'stop':
+            print("stop audio")
             audio_player.pause()
+            audio_queue.clear_queue()
 
     except Exception as e:
         print(f"Error processing audio control command: {e}")

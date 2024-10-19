@@ -1,4 +1,3 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import VideoPlayerComponent from './component/VideoPlayerComponent';
@@ -8,61 +7,105 @@ interface Video {
   url: string;
   name: string;
 }
+
+interface StreamingData {
+  clip_start_time: number;
+  clip_end_time: number;
+  diarize_bank: Array<{
+    speaker: string;
+    start: number;
+    end: number;
+    text: string;
+  }>;
+}
+
 function App() {
   const [video, setVideo] = useState<Video | null>(null);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [streamingData, setStreamingData] = useState<StreamingData | null>(null);
 
   useEffect(() => {
-    
-      const socket = new WebSocket("ws://localhost:8000/ws");
+    const ws = new WebSocket("ws://localhost:8000/ws");
 
-      socket.onopen = function(event) {
-          console.log("WebSocket connection established.");
-      };
+    ws.onopen = function (event) {
+      // console.log("WebSocket connection established.");
+      setSocket(ws);
+    };
 
-      socket.onmessage = function(event) {
-          // Extract the session ID from the message
-          if (event.data.startsWith("session_id:")) {
-              const sessionId = event.data.split(":")[1];
+    ws.onmessage = function (event) {
+      if (event.data.startsWith("session_id:")) {
+        const receivedSessionId = event.data.split(":")[1];
+        document.cookie = `session_id=${receivedSessionId}; path=/; max-age=86400`;
+        // console.log("Session ID received and stored in cookie:", receivedSessionId);
+        setSessionId(receivedSessionId);
+      } else {
+        const parsedData = JSON.parse(event.data); // Parse the data as StreamingData
+        setStreamingData(parsedData); // Save streaming data to state
+      }
+    };
 
-              // Set the session ID as a cookie (expires in 1 day)
-              document.cookie = `session_id=${sessionId}; path=/; max-age=86400`; // 86400 seconds = 1 day
-              console.log("Session ID received and stored in cookie:", sessionId);
-          }
-      };
+    ws.onclose = function (event) {
+      console.log("WebSocket connection closed.");
+    };
 
-      socket.onclose = function(event) {
-          console.log("WebSocket connection closed.");
-          // You can also handle session cleanup if needed
-      };
-
-      return () => {
-          socket.close();  // Cleanup WebSocket when the component unmounts
-      };
+    return () => {
+      ws.close();
+    };
   }, []);
 
+  // Function to send data to the server
+  const sendMessageToServer = (message: string) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(message); // Send the message to the WebSocket server
+      // console.log("Sent message to server:", message);
+    } else {
+      console.log("WebSocket connection is not open.");
+    }
+  };
 
-  
+  // Send session ID to the server after it is set
+  useEffect(() => {
+    if (sessionId) {
+      sendMessageToServer("session_id:" + sessionId); // Send session ID only after it's set in state
+    }
+  }, [sessionId, socket]); // Ensure socket is ready and session ID is set
+
+  // Render only if the session ID is available
+  if (!sessionId) {
+    return (
+      <div className="App">
+        <div className="loading-section">
+          <h2>Initializing session, please wait...</h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <div className="grid-container">
         <div className="video-playlist-section">
-          <VideoPlaylistComponent url="http://localhost:8000/videos" video={video} setVideo={setVideo}/>
+          <VideoPlaylistComponent
+            url="http://localhost:8000/videos"
+            video={video}
+            setVideo={setVideo}
+          />
         </div>
         <div className="video-player-section">
           <div className="video-player-box">
-            <VideoPlayerComponent videoName={video? video.name : ""} url = {video? video.url : ""} audioControlUrl="http://localhost:8000/audio-control" />
-          </div>
-          <div className="speech-to-text-box">
-            Speech to Text
+            <VideoPlayerComponent
+              videoName={video ? video.name : ""}
+              url={video ? video.url : ""}
+              audioControlUrl="http://localhost:8000/audio-control"
+              streamingData={streamingData}
+              sessionId={sessionId}
+            />
           </div>
         </div>
         <div className="llm-section">
-          <div className="prompt-generation-box">
-            Prompt generations
-          </div>
-          <div className="response-box">
-            LLM response generations
-          </div>
+          <div className="prompt-generation-box">Prompt generations</div>
+          <div className="response-box">LLM response generations</div>
         </div>
       </div>
     </div>

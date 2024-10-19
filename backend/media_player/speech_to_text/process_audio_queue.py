@@ -5,11 +5,14 @@ from collections import deque
 import time
 import whisperx
 import whisper
+import asyncio as asyncio
 from pyannote.audio import Pipeline, Model, Inference
 from dotenv import load_dotenv
 from pyannote.core import Segment
 import numpy as np
 from scipy.spatial.distance import cosine
+from app.utilities.web_socket_helper import stream_data_to_client
+
 
 
 load_dotenv()
@@ -23,7 +26,7 @@ EMBEDDING_DIR = os.path.join(BASE_DIR, 'speech_to_text', 'embedding_data')
 TEMP_DIR = os.path.join(BASE_DIR, 'speech_to_text', 'temp_audio_files') 
 
 class ProcessAudioQueue:
-    def __init__(self, temp_dir='temp_audio_files', session_id=None, device = None, model=None, audio_player=None):
+    def __init__(self, temp_dir='temp_audio_files', session_id=None, device = None, model=None, audio_player=None, websocket=None):
         print("ProcessAudioQueue init: ", session_id)
         self.session_id = session_id
         self.queue = deque()
@@ -35,6 +38,7 @@ class ProcessAudioQueue:
         self.inference_model = Model.from_pretrained("pyannote/embedding", 
                         use_auth_token=inference_model)
         self.diarize_bank = {}
+        self.websocket = websocket
 
         self.stop_flag = False  # Flag to stop the thread
         self.monitor_thread = None  # Initialize the thread as None
@@ -44,15 +48,17 @@ class ProcessAudioQueue:
         self.cur_time = 0
         
         self._start_monitoring()
+        asyncio.create_task(self._start_monitoring())  # Switch to asyncio task to monitor queue
 
-
-    def _start_monitoring(self):
+    async def _start_monitoring(self):
         """
-        Start the background thread to monitor the queue for files to process.
+        Start monitoring the queue asynchronously.
         """
-        if not self.monitor_thread or not self.monitor_thread.is_alive():
-            self.monitor_thread = threading.Thread(target=self._monitor_queue)
-            self.monitor_thread.start()
+        print(f"Started monitoring for session: {self.session_id}")
+        while not self.stop_flag:
+            if self.queue:
+                await self.dequeue()  # Await dequeue to process the file asynchronously
+            await asyncio.sleep(2)  # Non-blocking sleep
 
     def _monitor_queue(self):
         """
@@ -94,75 +100,132 @@ class ProcessAudioQueue:
         """
         self.queue.append(file_name)
 
-    def dequeue(self):
+    async def dequeue(self):
         if self.queue:
             file_name = self.queue.popleft()
             full_path = os.path.join(TEMP_DIR, file_name)
-            # if file_name and os.path.exists(full_path):
-            #     try:
-            #         # print(f"Processing file: {file_name}")
-            #         # print(f'Queue: {self.queue}')
-            #         self.process_file(file_name)
-            #     except Exception as e:
-            #         print(f"Error processing file {file_name}: {e}")
-            #     finally:
-            #         self._delete_file(file_name)
-            # else:
-            #     print(f"File {file_name} no longer exists, skipping.")
+            if file_name and os.path.exists(full_path):
+                try:
+                    # print(f"File: {file_name} exists")
+                    clip_start_time = self.audio_player.get_time_file_dict()[file_name]['start']
+                    clip_end_time = self.audio_player.get_time_file_dict()[file_name]['end']
+                    # print(f"Processing file: {file_name}")
+                    # print(f"time: {clip_start_time}")
+                    # print(f'Queue: {self.queue}')
+                    await self.process_file(file_name, clip_start_time, clip_end_time)
+                except Exception as e:
+                    print(f"Error processing file {file_name}: {e}")
+                finally:
+                    self._delete_file(file_name)
+            else:
+                print(f"File {file_name} no longer exists, skipping.")
 
 
-    def process_file(self, file_name):
+    async def process_file(self, file_name, clip_start_time, clip_end_time):
         """
         Process the file before deleting it.
         Custom processing logic can be implemented here.
         """
+        # print(f"Processing file: {file_name}")
         try:
             full_path = os.path.join(TEMP_DIR, file_name)
             # print(f"Session ID: {self.session_id}, Processing file: {full_path}")
-            self.embed_transcribe_speakers(full_path)
+            self.embed_transcribe_speakers(full_path, file_name)
+            clip_data = {
+                "clip_start_time": clip_start_time,
+                "clip_end_time": clip_end_time,
+                "diarize_bank": self.diarize_bank.get(file_name, {})
+            }
+            # print(f"Sending data for {file_name} to the client via WebSocket.")
+
+            # Send data to the client using WebSocket
+            if self.websocket:
+                await stream_data_to_client(self.websocket, self.session_id, clip_data)
+                # print(f"Sent data for {file_name} to the client via WebSocket.")
+            else:
+                print(f"WebSocket not connected. Data for {file_name} not sent to the client.")
         except Exception as e:
             print(f'Queue: {self.queue}')
             print(f"Exception occurred while processing {file_name}: {e}")
             raise 
 
-    def embed_transcribe_speakers(self, full_path):
+    def embed_transcribe_speakers(self, full_path, file_name):
         total_time = 0
 
-        inference = Inference(self.inference_model, window="whole")
-        audio = whisperx.load_audio(full_path)
-        result = self.model.transcribe(audio, batch_size=16)
-        align_model, metadata = whisperx.load_align_model(language_code="en", device=self.device)
+        try:
+            inference = Inference(self.inference_model, window="whole")
 
-        # # Align the transcription for word-level timing
-        aligned_result = whisperx.align(result["segments"], align_model, metadata, full_path, self.device)
-        diarize_model = whisperx.DiarizationPipeline(use_auth_token="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", device=self.device)
-        diarize_segments = diarize_model(audio)
-        aligned_result = whisperx.assign_word_speakers(diarize_segments, aligned_result)
+            audio = whisperx.load_audio(full_path)
+            result = self.model.transcribe(audio, batch_size=16)
+            align_model, metadata = whisperx.load_align_model(language_code="en", device=self.device)
+            aligned_result = whisperx.align(result["segments"], align_model, metadata, full_path, self.device)
+            diarize_model = whisperx.DiarizationPipeline(use_auth_token="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", device=self.device)
+            diarize_segments = diarize_model(audio)
+            aligned_result = whisperx.assign_word_speakers(diarize_segments, aligned_result)
 
-        for segments in aligned_result["segments"]:
-            phrases = {}
-            for word in segments["words"]:
-                if word["speaker"] not in phrases:
-                    phrases[word["speaker"]] = {"text" : "", "start" : 0, "end" : 0, "speaker" : "", "session_id" : self.session_id}
-                    phrases[word["speaker"]]["start"] = word["start"]
-                phrases[word["speaker"]]["text"] += word["word"] + " "
-                phrases[word["speaker"]]["end"] = word["end"]
-            for phrase in phrases:
-                segment = Segment(phrases[phrase]["start"], phrases[phrase]["end"])
-                speaker_embedding = inference.crop(full_path, segment)
-                similarities = self.recognize_speaker(speaker_embedding, phrases, phrase)
-                speaker_similarity = max(similarities.values())
-                speaker_name = max(similarities, key=similarities.get)
+        except Exception as e:
+            print(f"Error during initialization and transcription process: {e}")
+            return
 
-                if speaker_similarity < 0.1:
-                    speaker_name = "Unknown"
+        # Processing segments
+        try:
+            for segments in aligned_result["segments"]:
+                phrases = {}
 
-                phrases[phrase]["speaker"] = speaker_name
-                total_time = self.cur_time + phrases[phrase]["end"]
-                self.diarize_bank[str(convert_seconds_to_hhmmss(total_time))] = phrases[phrase]
+                # Check if 'words' exist and process each word
+                if "words" in segments:
+                    for word in segments["words"]:
+                        if "speaker" not in word:
+                            print(f"Warning: 'speaker' not found in word: {word}")
+                            continue
+
+                        speaker_id = word["speaker"]
+                        if speaker_id not in phrases:
+                            phrases[speaker_id] = {
+                                "text": "",
+                                "start": word["start"],
+                                "end": word["end"],
+                                "speaker": "",
+                                "session_id": self.session_id
+                            }
+
+                        phrases[speaker_id]["text"] += word["word"] + " "
+                        phrases[speaker_id]["end"] = word["end"]
+
+                # Processing each phrase
+                for speaker_id in phrases:
+                    try:
+                        segment = Segment(phrases[speaker_id]["start"], phrases[speaker_id]["end"])
+                        speaker_embedding = inference.crop(full_path, segment)
+
+                        similarities = self.recognize_speaker(speaker_embedding, phrases, speaker_id)
+                        speaker_similarity = max(similarities.values())
+                        speaker_name = max(similarities, key=similarities.get)
+
+                        if speaker_similarity < 0.1:
+                            speaker_name = "Unknown"
+
+                        phrases[speaker_id]["speaker"] = speaker_name
+                        total_time = self.cur_time + phrases[speaker_id]["end"]
+
+                    except Exception as e:
+                        print(f"Error processing phrase for speaker {speaker_id}: {e}")
+
+                # Saving phrases to diarize_bank
+                try:
+                    if file_name not in self.diarize_bank:
+                        self.diarize_bank[file_name] = []
+
+                    for val in phrases.values():
+                        self.diarize_bank[file_name].append(val)
+
+                except Exception as e:
+                    print(f"Error saving phrases to diarize_bank: {e}")
+
+        except Exception as e:
+            print(f"Error processing segments: {e}")
+
         self.cur_time = total_time
-        print(f'Total time: ', convert_seconds_to_hhmmss(self.cur_time))
-        # print(self.diarize_bank)
 
 
     def recognize_speaker(self, speaker_embedding, phrases, phrase):
@@ -235,6 +298,9 @@ class ProcessAudioQueue:
         """Handle the change in player's start time."""
         print(f"Player start time changed to: {new_time}")
         self.cur_time = new_time
+
+    def get_diarize_bank(self):
+        return self.diarize_bank
 
 
 

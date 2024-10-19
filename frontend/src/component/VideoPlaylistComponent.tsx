@@ -39,6 +39,7 @@ function VideoPlaylistComponent({ url, video,  setVideo }: VideoPlaylistComponen
     }
   }, [playlist, video, setVideo]);
 
+
   const handleRowClick = (selectedVideo: Video) => {
     setVideo(selectedVideo);
   };
